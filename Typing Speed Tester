@@ -1,0 +1,98 @@
+import tkinter as tk
+import time
+import random
+sentences = [
+    "The quick brown fox jumps over the lazy dog.",
+    "Python is an amazing programming language.",
+    "I love solving problems with code.",
+    "Practice makes a person perfect.",
+    "Typing tests are great for improving speed.",
+    "Always focus on accuracy before speed.",
+    "Efficient typing is a valuable skill."
+]
+used_sentences = []
+wpm_history = []
+test_time = 30
+start_time = 0
+running = False
+def start():
+    global start_time, running
+    if running:
+        return
+    running = True
+    start_btn.config(state="disabled")
+    sentence = random.choice([s for s in sentences if s not in used_sentences])
+    used_sentences.append(sentence)
+    if len(used_sentences) == len(sentences):
+        used_sentences.clear()
+    sentence_lbl.config(text=sentence)
+    entry.config(state="normal")
+    entry.delete(0, tk.END)
+    entry.focus()
+    submit_btn.config(state="normal")
+    start_time = time.time()
+    update_timer(test_time)
+def update_timer(time_left):
+    if time_left >= 0 and running:
+        timer_lbl.config(text=f"Time Left: {time_left}s")
+        root.after(1000, update_timer, time_left - 1)
+    else:
+        check_result()
+def check_result():
+    global running
+    running = False
+    end_time = time.time()
+    entry.config(state="disabled")
+    original = sentence_lbl.cget("text")
+    typed = entry.get()
+    words = len(original.split())
+    time_taken = end_time - start_time
+    wpm = round((words / time_taken) * 60, 2) if time_taken > 0 else 0
+    accuracy = round((len([i for i, j in zip(typed, original) if i == j]) / len(original)) * 100, 2)
+    result = f"WPM: {wpm}\nAccuracy: {accuracy}%"
+    result_lbl.config(text=result)
+    wpm_history.append(f"{wpm} WPM")
+    update_history()
+    start_btn.config(state="normal")
+    submit_btn.config(state="disabled")
+def submit():
+    check_result()
+def update_history():
+    history_txt = "\n".join(wpm_history[-5:])
+    history_lbl.config(text=f"Recent Results:\n{history_txt}")
+def reset():
+    global running, wpm_history, used_sentences
+    running = False
+    wpm_history = []
+    used_sentences = []
+    sentence_lbl.config(text="Click 'Start Test' to begin!")
+    entry.config(state="disabled")
+    result_lbl.config(text="")
+    history_lbl.config(text="Recent Results:")
+    timer_lbl.config(text="Time Left: --s")
+    start_btn.config(state="normal")
+    submit_btn.config(state="disabled")
+root = tk.Tk()
+root.title("Typing Speed Test")
+root.geometry("600x400")
+root.configure(bg="#f0f8ff")
+title_lbl = tk.Label(root, text="Typing Speed Test", font=("Helvetica", 24, "bold"), bg="#4682b4", fg="white", pady=10)
+title_lbl.pack(fill="x")
+sentence_lbl = tk.Label(root, text="Click 'Start Test' to begin!", wraplength=550, justify="center", font=("Helvetica", 16), bg="#f0f8ff", pady=10)
+sentence_lbl.pack(pady=10)
+entry = tk.Entry(root, font=("Helvetica", 14), state="disabled", width=50)
+entry.pack(pady=10)
+timer_lbl = tk.Label(root, text="Time Left: --s", font=("Helvetica", 14), bg="#f0f8ff", pady=5)
+timer_lbl.pack()
+start_btn = tk.Button(root, text="Start Test", font=("Helvetica", 14), bg="#32cd32", fg="white", command=start)
+start_btn.pack(pady=5)
+submit_btn = tk.Button(root, text="Submit Test", font=("Helvetica", 14), bg="#ff8c00", fg="white", command=submit, state="disabled")
+submit_btn.pack(pady=5)
+reset_btn = tk.Button(root, text="Reset Test", font=("Helvetica", 14), bg="#ff4500", fg="white", command=reset)
+reset_btn.pack(pady=5)
+result_lbl = tk.Label(root, text="", font=("Helvetica", 14), bg="#f0f8ff", pady=5)
+result_lbl.pack()
+history_lbl = tk.Label(root, text="Recent Results:", font=("Helvetica", 14), bg="#f0f8ff", pady=5, justify="left")
+history_lbl.pack()
+root.mainloop()
+
