@@ -1,0 +1,94 @@
+import tkinter as tk
+import random
+import time
+class MemoryMatchGame:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Memory Match Game")
+        self.master.geometry("500x600")
+        self.master.config(bg="#2c3e50")
+        self.level = 1
+        self.card_colors = ["#FF5733", "#33FF57", "#3357FF", "#F33FFF", "#F7D000", "#2E8B57", "#9B59B6", "#F39C12"]
+        self.cards = []
+        self.buttons = []
+        self.flipped_cards = []
+        self.card_dict = {}
+        self.moves = 0
+        self.score = 0
+        self.timer_started = False
+        self.start_time = 0
+        self.time_limit = 30
+        self.create_game_board()
+    def create_game_board(self):
+        for widget in self.master.winfo_children():
+            widget.destroy()
+        self.cards = random.sample(self.card_colors, self.level * 2)
+        self.cards = self.cards * 2
+        random.shuffle(self.cards)
+        self.buttons = []
+        self.card_dict = {}
+        for i in range(self.level + 2):
+            for j in range(4):
+                if len(self.cards) == 0:
+                    break
+                button = tk.Button(self.master, bg="#BDC3C7", width=10, height=4, font=('Arial', 12, 'bold'),
+                                   relief="flat", bd=0, fg="#2c3e50", command=lambda row=i, col=j: self.flip_card(row, col))
+                button.grid(row=i, column=j, padx=5, pady=5)
+                self.buttons.append(button)
+                self.card_dict[(i, j)] = self.cards.pop(0)
+        self.score_label = tk.Label(self.master, text="Score: 0 | Time: 30s", font=('Arial', 14), bg="#2c3e50", fg="#ECF0F1")
+        self.score_label.grid(row=self.level + 3, column=0, columnspan=4, pady=10)
+        self.start_game()
+    def start_game(self):
+        self.moves = 0
+        self.score = 0
+        self.time_limit = 30
+        self.update_timer()
+        self.score_label.config(text=f"Score: {self.score} | Time: {self.time_limit}s")
+        self.timer_started = True
+        self.start_time = time.time()
+    def flip_card(self, row, col):
+        button = self.buttons[row * 4 + col]
+        card_color = self.card_dict.get((row, col), None)
+        if card_color and button['bg'] == "#BDC3C7" and len(self.flipped_cards) < 2:
+            button.config(bg=card_color, relief="sunken")
+            self.flipped_cards.append((row, col, card_color))
+            self.moves += 1
+            self.score_label.config(text=f"Moves: {self.moves} | Time: {self.time_limit}s")
+            if len(self.flipped_cards) == 2:
+                self.master.after(500, self.check_match)
+    def check_match(self):
+        if self.flipped_cards[0][2] == self.flipped_cards[1][2]:
+            self.score += 1
+            self.score_label.config(text=f"Score: {self.score} | Time: {self.time_limit}s")
+        else:
+            for card in self.flipped_cards:
+                row, col, _ = card
+                self.buttons[row * 4 + col].config(bg="#BDC3C7", relief="flat")
+        self.flipped_cards.clear()
+        if self.score == len(self.card_dict) // 2:
+            self.end_game()
+    def update_timer(self):
+        elapsed_time = int(time.time() - self.start_time)
+        remaining_time = self.time_limit - elapsed_time
+        self.score_label.config(text=f"Score: {self.score} | Time: {remaining_time}s")
+        if remaining_time <= 0:
+            self.end_game()
+        else:
+            self.master.after(1000, self.update_timer)
+    def end_game(self):
+        self.timer_started = False
+        if self.score == len(self.card_dict) // 2:
+            self.score_label.config(text=f"Game Over! You won in {self.moves} moves!")
+        else:
+            self.score_label.config(text=f"Time's up! You scored {self.score} points.")
+        self.master.after(2000, self.next_level)
+    def next_level(self):
+        if self.score == len(self.card_dict) // 2:
+            self.level += 1
+            self.create_game_board()
+if __name__ == "__main__":
+    root = tk.Tk()
+    game = MemoryMatchGame(root)
+    root.mainloop()
+
