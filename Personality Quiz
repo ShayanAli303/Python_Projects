@@ -1,0 +1,142 @@
+import tkinter as tk
+from tkinter import messagebox
+import random
+
+class PersonalityQuiz:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Fun Personality Quiz")
+        self.root.geometry("600x400")
+        self.root.configure(bg="#F5F5F5")
+        
+        self.score = 0
+        self.current_question = 0
+        self.questions = [
+            {
+                "question": "Do you prefer to spend time with a large group or alone?",
+                "options": ["Large group", "Alone"],
+                "score": [1, -1],
+                "category": "Social Preferences"
+            },
+            {
+                "question": "Do you prefer following a plan or being spontaneous?",
+                "options": ["Follow a plan", "Spontaneous"],
+                "score": [1, -1],
+                "category": "Lifestyle"
+            },
+            {
+                "question": "Are you more calm or energetic?",
+                "options": ["Calm", "Energetic"],
+                "score": [1, -1],
+                "category": "Energy"
+            },
+            {
+                "question": "Do you like trying new things or sticking to what you know?",
+                "options": ["Trying new things", "Sticking to what I know"],
+                "score": [1, -1],
+                "category": "Adventure"
+            },
+            {
+                "question": "Do you prefer to follow rules or make your own?",
+                "options": ["Follow rules", "Make my own"],
+                "score": [1, -1],
+                "category": "Control"
+            },
+            {
+                "question": "Are you more of a thinker or a feeler?",
+                "options": ["Thinker", "Feeler"],
+                "score": [1, -1],
+                "category": "Decision Making"
+            }
+        ]
+        
+        self.create_widgets()
+
+    def create_widgets(self):
+        self.title_label = tk.Label(self.root, text="Fun Personality Quiz", font=("Helvetica", 24, "bold"), fg="#2c3e50", bg="#F5F5F5")
+        self.title_label.pack(pady=20)
+        
+        self.question_label = tk.Label(self.root, text="Question will appear here.", font=("Helvetica", 14), wraplength=500, bg="#F5F5F5")
+        self.question_label.pack(pady=20)
+
+        self.option1_button = tk.Button(self.root, text="Option 1", font=("Helvetica", 12), bg="#3498db", fg="white", width=30, command=lambda: self.answer(0))
+        self.option1_button.pack(pady=10)
+        
+        self.option2_button = tk.Button(self.root, text="Option 2", font=("Helvetica", 12), bg="#3498db", fg="white", width=30, command=lambda: self.answer(1))
+        self.option2_button.pack(pady=10)
+        
+        self.next_button = tk.Button(self.root, text="Next Question", font=("Helvetica", 12), bg="#2ecc71", fg="white", command=self.next_question, state=tk.DISABLED)
+        self.next_button.pack(pady=10)
+        
+        self.ask_question()
+
+    def ask_question(self):
+        if self.current_question < len(self.questions):
+            question = self.questions[self.current_question]
+            self.question_label.config(text=question["question"])
+            self.option1_button.config(text=question["options"][0])
+            self.option2_button.config(text=question["options"][1])
+            self.next_button.config(state=tk.DISABLED)
+        else:
+            self.show_result()
+
+    def answer(self, answer_index):
+        question = self.questions[self.current_question]
+        self.score += question["score"][answer_index]
+        self.option1_button.config(state=tk.DISABLED)
+        self.option2_button.config(state=tk.DISABLED)
+        self.next_button.config(state=tk.NORMAL)
+
+    def next_question(self):
+        self.current_question += 1
+        self.option1_button.config(state=tk.NORMAL)
+        self.option2_button.config(state=tk.NORMAL)
+        self.ask_question()
+
+    def show_result(self):
+        personality = self.get_personality()
+        personality_meaning = self.get_personality_meaning(personality)
+        
+        messagebox.showinfo("Your Personality", f"Based on your answers, your personality type is: {personality} ({personality_meaning})")
+        
+        suggestion = self.get_suggestion(personality)
+        messagebox.showinfo("Suggestion", f"Suggested Activity: {suggestion}")
+
+    def get_personality(self):
+        if self.score > 2:
+            return "Extrovert"
+        elif self.score < -2:
+            return "Introvert"
+        else:
+            return "Ambivert"
+
+    def get_personality_meaning(self, personality):
+        meanings = {
+            "Extrovert": "An extrovert enjoys social interactions and is energized by spending time with others.",
+            "Introvert": "An introvert prefers solitude or small gatherings and feels drained by too much social interaction.",
+            "Ambivert": "An ambivert has traits of both introverts and extroverts, adjusting to the situation."
+        }
+        return meanings[personality]
+
+    def get_suggestion(self, personality):
+        suggestions = {
+            "Extrovert": [
+                "You thrive in social settings! Try joining a club, volunteering, or hosting a gathering.",
+                "Spend time exploring new social circles and expanding your network for personal growth."
+            ],
+            "Introvert": [
+                "You prefer quieter, reflective moments. Try engaging in activities like reading, meditation, or solo hobbies.",
+                "Recharge by spending time in nature or with close friends. You deserve peace and calm."
+            ],
+            "Ambivert": [
+                "You can balance social and solo time effectively! Try alternating between social outings and quiet time for maximum energy.",
+                "Explore both individual and group activities to satisfy all sides of your personality."
+            ]
+        }
+        return random.choice(suggestions[personality])
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    quiz = PersonalityQuiz(root)
+    root.mainloop()
+
