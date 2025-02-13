@@ -1,0 +1,190 @@
+import tkinter as tk
+from tkinter import ttk
+from datetime import datetime
+import matplotlib.pyplot as plt
+
+events_data = {
+    "Space Exploration": {
+        "Apollo 11 Moon Landing": {
+            "date": "1969-07-20",
+            "context": "The Apollo 11 mission successfully landed the first humans on the moon. While this event occurred, Woodstock music festival was held in New York.",
+            "key_people": ["Neil Armstrong", "Buzz Aldrin", "Michael Collins"]
+        },
+        "Mars Rover Landing": {
+            "date": "2012-08-06",
+            "context": "NASA's Curiosity Rover successfully landed on Mars to explore the planet's surface and search for signs of life.",
+            "key_people": ["Curiosity Rover", "NASA Engineers"]
+        },
+        "Sputnik 1 Launch": {
+            "date": "1957-10-04",
+            "context": "The Soviet Union launched Sputnik 1, the first artificial Earth satellite, marking the beginning of the space race.",
+            "key_people": ["Sergei Korolev", "Sputnik Engineers"]
+        },
+        "SpaceX Launch": {
+            "date": "2020-05-30",
+            "context": "SpaceX launched its first crewed mission to the International Space Station, making history in private space travel.",
+            "key_people": ["Elon Musk", "SpaceX Engineers"]
+        },
+        "Hubble Space Telescope Launch": {
+            "date": "1990-04-24",
+            "context": "The Hubble Space Telescope was launched into low Earth orbit, providing humanity with clear images of distant galaxies.",
+            "key_people": ["NASA", "Hubble Scientists"]
+        },
+        "Voyager 1 Interstellar Journey": {
+            "date": "1977-09-05",
+            "context": "NASA launched Voyager 1, which became the first human-made object to enter interstellar space.",
+            "key_people": ["NASA Engineers"]
+        }
+    },
+    "World Wars": {
+        "World War II Begins": {
+            "date": "1939-09-01",
+            "context": "World War II began when Germany invaded Poland. The event led to the involvement of many nations across the globe.",
+            "key_people": ["Adolf Hitler", "Winston Churchill", "Franklin D. Roosevelt"]
+        },
+        "D-Day Invasion": {
+            "date": "1944-06-06",
+            "context": "The Allied invasion of Normandy, which marked the beginning of the end of World War II in Europe.",
+            "key_people": ["Dwight D. Eisenhower", "Omar Bradley"]
+        },
+        "Pearl Harbor Attack": {
+            "date": "1941-12-07",
+            "context": "The surprise attack on Pearl Harbor by the Japanese led the United States to enter World War II.",
+            "key_people": ["Hideki Tojo", "Franklin D. Roosevelt"]
+        },
+        "End of World War I": {
+            "date": "1918-11-11",
+            "context": "World War I ended with the signing of the Armistice, marking the conclusion of one of the deadliest wars in history.",
+            "key_people": ["Kaiser Wilhelm II", "Woodrow Wilson"]
+        },
+        "Atomic Bomb on Hiroshima": {
+            "date": "1945-08-06",
+            "context": "The United States dropped an atomic bomb on Hiroshima, leading to the eventual surrender of Japan and the end of World War II.",
+            "key_people": ["Harry S. Truman", "J. Robert Oppenheimer"]
+        },
+        "Treaty of Versailles": {
+            "date": "1919-06-28",
+            "context": "The Treaty of Versailles was signed, officially ending World War I and imposing heavy reparations on Germany.",
+            "key_people": ["Woodrow Wilson", "David Lloyd George"]
+        }
+    },
+    "Scientific Discoveries": {
+        "Theory of Relativity": {
+            "date": "1905-11-21",
+            "context": "Albert Einstein published his theory of relativity, which revolutionized the understanding of time, space, and energy.",
+            "key_people": ["Albert Einstein"]
+        },
+        "DNA Structure Discovered": {
+            "date": "1953-02-28",
+            "context": "James Watson and Francis Crick discovered the structure of DNA, which was a major milestone in the field of genetics.",
+            "key_people": ["James Watson", "Francis Crick"]
+        },
+        "Penicillin Discovered": {
+            "date": "1928-09-28",
+            "context": "Alexander Fleming discovered penicillin, the world's first antibiotic, which revolutionized medicine.",
+            "key_people": ["Alexander Fleming"]
+        },
+        "The Big Bang Theory": {
+            "date": "1948-01-01",
+            "context": "George Lemaitre and others proposed the Big Bang theory, explaining the origins of the universe.",
+            "key_people": ["George Lemaitre", "Edwin Hubble"]
+        },
+        "Electricity and Magnetism Unified": {
+            "date": "1864-06-02",
+            "context": "James Clerk Maxwell unified electricity and magnetism through his equations, forming the foundation of modern electromagnetism.",
+            "key_people": ["James Clerk Maxwell"]
+        },
+        "Invention of the Light Bulb": {
+            "date": "1879-12-01",
+            "context": "Thomas Edison invented the first practical light bulb, which revolutionized the way people lived and worked.",
+            "key_people": ["Thomas Edison"]
+        }
+    }
+}
+
+def calculate_time_difference(event_name, category):
+    event_date_str = events_data[category][event_name]["date"]
+    event_date = datetime.strptime(event_date_str, "%Y-%m-%d")
+    current_date = datetime.now()
+    time_difference = current_date - event_date
+    years = time_difference.days // 365
+    months = (time_difference.days % 365) // 30
+    days = (time_difference.days % 365) % 30
+    context = events_data[category][event_name]["context"]
+    key_people = ", ".join(events_data[category][event_name]["key_people"])
+    return years, months, days, context, key_people
+def display_suggestions(category):
+    suggestions = list(events_data[category].keys())
+    suggestions_label.config(text=f"Suggested search terms: {', '.join(suggestions)}")
+
+def display_event_info():
+    event_name = event_entry.get().lower()
+    category = category_var.get()
+    matching_events = []
+    for event in events_data[category]:
+        if event_name in event.lower():
+            matching_events.append(event)
+    
+    if matching_events:
+        event_name = matching_events[0]
+        years, months, days, context, key_people = calculate_time_difference(event_name, category)
+        result_text = f"Event: {event_name}\n\n"
+        result_text += f"Time Travel: {years} years, {months} months, {days} days ago\n\n"
+        result_text += f"Context: {context}\n\n"
+        result_text += f"Key People: {key_people}"
+    else:
+        result_text = "Event not found. Please try again."
+    result_label.config(text=result_text)
+    plot_timeline(event_name, category)
+
+def plot_timeline(event_name, category):
+    event_date_str = events_data[category][event_name]["date"]
+    event_date = datetime.strptime(event_date_str, "%Y-%m-%d")
+    current_date = datetime.now()
+    time_difference = current_date - event_date
+    years = time_difference.days // 365
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.plot([0, years], [1, 1], color='royalblue', linewidth=6)
+    ax.scatter(years, 1, color='red', s=100, label=f'{event_name} ({years} years ago)')
+    ax.annotate(f'{event_name} ({years} years ago)', 
+                xy=(years, 1), 
+                xytext=(years + 2, 1.1),
+                arrowprops=dict(facecolor='black', shrink=0.05),
+                fontsize=12, color='black')
+    ax.text(0, 1.3, "The timeline shows the event's place in history compared to the current year.", 
+            ha='center', fontsize=12, color='green')
+    ax.text(0, 1.5, "The red point represents the event's date, and the length of the line shows how many years have passed.", 
+            ha='center', fontsize=12, color='green')
+    ax.set_xlim(0, 100)
+    ax.set_yticks([1])
+    ax.set_yticklabels(['Event Timeline'])
+    ax.set_xlabel('Years Ago')
+    ax.set_title(f'Historical Event Timeline: {event_name}')
+    plt.style.use('ggplot')
+    plt.grid(True)
+    plt.show()
+window = tk.Tk()
+window.title("Quantum Leap Time Tracker")
+window.geometry("1920x1080")
+window.configure(bg='#F0F0F0')
+category_label = tk.Label(window, text="Select Category:", font=("Helvetica", 14, "bold"), bg='#F0F0F0')
+category_label.pack(pady=20)
+categories = ["Space Exploration", "World Wars", "Scientific Discoveries"]
+category_var = tk.StringVar(window)
+category_var.set(categories[0])
+category_menu = ttk.Combobox(window, textvariable=category_var, values=categories, font=("Helvetica", 12), width=30)
+category_menu.pack(pady=10)
+suggestions_label = tk.Label(window, text="Suggested search terms:", font=("Helvetica", 12), bg='#F0F0F0', wraplength=500)
+suggestions_label.pack(pady=10)
+search_label = tk.Label(window, text="Enter a Historical Event (partial search allowed):", font=("Helvetica", 14, "bold"), bg='#F0F0F0')
+search_label.pack(pady=20)
+event_entry = tk.Entry(window, font=("Helvetica", 14), width=40, bd=3, relief="solid")
+event_entry.pack(pady=10)
+search_button = tk.Button(window, text="Search Event", font=("Helvetica", 14), command=display_event_info)
+search_button.pack(pady=10)
+result_label = tk.Label(window, text="", font=("Helvetica", 12), bg='#F0F0F0', wraplength=600)
+result_label.pack(pady=20)
+category_menu.bind("<<ComboboxSelected>>", lambda event: display_suggestions(category_var.get()))
+
+window.mainloop()
+
